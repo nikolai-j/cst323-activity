@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All The Games!</title>
+</head>
+<body>
+
+<h1>All The Games!</h1>
+<tr th:each="game : ${games}">
+  <td th:text="${game.title}"></td>
+  <td th:text="${game.quantity}"></td>
+  <td th:text="${game.price}"></td>
+  <td th:text="${game.gameSystem}"></td>
+</tr>
+
+
+
+
+</body>
+</html>
