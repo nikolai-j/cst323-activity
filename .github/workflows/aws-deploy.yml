@@ -49,7 +49,7 @@ jobs:
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name "CST323-GameInventory" \
-            --version-label "${GITHUB_SHA}" \
+            --version-label "${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
             --source-bundle S3Bucket="${{ vars.EB_S3_BUCKET }}",S3Key="cst323/${GITHUB_SHA}.jar" \
             --process
 
@@ -57,7 +57,7 @@ jobs:
         run: |
           aws elasticbeanstalk update-environment \
             --environment-name "CST323-GameInventory-env" \
-            --version-label "${GITHUB_SHA}"
+            --version-label "${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
       - name: Wait for Deployment
         run: |
