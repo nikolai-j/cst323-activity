@@ -1,10 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Edit Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
+
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/games}">
+            Game Inventory
+        </a>
+    </div>
+</nav>
+
+
+<h1>Edit Game</h1>
+
+<form th:action="@{/games/edit/{id}(id=${game.id})}"
+      th:object="${game}"
+      method="post">
+
+    <label>Title</label>
+    <input type="text" th:field="*{title}" required>
+
+    <label>Quantity</label>
+    <input type="number" th:field="*{quantity}" min="0" required>
+
+    <label>Price</label>
+    <input type="number" th:field="*{price}" min="0" step="0.01" required>
+
+    <label>Game System</label>
+    <input type="text" th:field="*{gameSystem}" required>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
+</form>
+
+
+<button type="button" class="btn btn-primary small" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    <a class="link-danger" th:href="@{/games}">Back to Games</a>
+</button>
 
 </body>
 </html>
