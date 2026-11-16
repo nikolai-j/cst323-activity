@@ -2,70 +2,71 @@ name: Build and Deploy to AWS
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
-  deploy:
+  build-and-deploy:
+    name: Build and Deploy Spring Boot
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set Up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: maven
 
-      - name: Build application
+      - name: Build with Maven
         run: mvn -B clean package -DskipTests
 
-      - name: Prepare deployment package
+      - name: Prepare Deployment Package
         run: |
           mkdir -p deployment
           cp "$(find target -maxdepth 1 -name '*.jar' ! -name '*.jar.original' | head -n 1)" deployment/application.jar
 
-       - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - name: Upload application to S3
+      - name: Upload Application to S3
         run: |
           aws s3 cp deployment/application.jar \
             "s3://${{ vars.EB_S3_BUCKET }}/cst323/${GITHUB_SHA}.jar"
 
-      - name: Create Elastic Beanstalk application version
+      - name: Create Elastic Beanstalk Version
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name "${{ vars.EB_APPLICATION }}" \
+            --application-name "CST323-GameInventory" \
             --version-label "${GITHUB_SHA}" \
             --source-bundle S3Bucket="${{ vars.EB_S3_BUCKET }}",S3Key="cst323/${GITHUB_SHA}.jar" \
             --process
 
-      - name: Deploy application
+      - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk update-environment \
-            --environment-name "${{ vars.EB_ENVIRONMENT }}" \
+            --environment-name "CST323-GameInventory-env" \
             --version-label "${GITHUB_SHA}"
 
-      - name: Wait for deployment
+      - name: Wait for Deployment
         run: |
           aws elasticbeanstalk wait environment-updated \
-            --environment-names "${{ vars.EB_ENVIRONMENT }}"
+            --environment-names "CST323-GameInventory-env"
 
-      - name: Verify deployment version
+      - name: Verify Deployment
         run: |
           aws elasticbeanstalk describe-environments \
-            --environment-names "${{ vars.EB_ENVIRONMENT }}" \
+            --environment-names "CST323-GameInventory-env" \
             --query 'Environments[0].[Status,Health,VersionLabel]' \
             --output table
